@@ -3,7 +3,7 @@
 #include <avr/interrupt.h>
 
 
-#define FOSC 16000000                       // Czêstotliwoœæ zegara
+#define FOSC 16000000							// CzÄ™stotliwoÅ›Ä‡ zegara
 #define BAUD 9600
 #define MYUBRR FOSC/16/BAUD -1
 #define d_RECEIVE_DATA_COMPLETE !(UCSR0A&(1<<RXC0))
@@ -17,15 +17,16 @@ char buffer[20];
 float f = 3.14;
 
 
+/* Pisanie zmiennej oÅ›miobitowej do UART */
 void usart_putchar(char bit8_data)
 {
 	while(d_SEND_DATA_COMPLETE) { ; }
 	UDR0 = bit8_data;
-}
+}
 
+/* Pisanie string do UART */
 void usart_pstr(char *s) {
-	// Zapêtla siê na ca³ym stringu
-	while (*s) {
+	while (*s) {							// ZapÄ™tla siÄ™ na caÅ‚ym stringu
 		usart_putchar(*s);
 		s++;
 	}
@@ -35,24 +36,24 @@ int main(void)
 {
 	/* Inicjalizacja diody na pin 13 */
 	
-	DDRB |= (1 << DDB5);		// Ustaw PB5 (pin 13) jako wyjœcie
-	PORTB |= (1 << DDB5);		// Stan wysoki na PB5 (pin 13)
+	DDRB |= (1 << DDB5);					// Ustaw PB5 (pin 13) jako wyjÅ›cie
+	PORTB |= (1 << DDB5);					// Stan wysoki na PB5 (pin 13)
 	
-	/* Inicjalizacja przerwañ na pin2 */
+	/* Inicjalizacja przerwaÅ„ na pin2 */
 	
-	DDRD &= ~(1 << DDD2);       // Ustaw PB0 (pin8) jako wejœcie
+	DDRD &= ~(1 << DDD2);					// Ustaw PB0 (pin8) jako wejÅ›cie
 
-	PORTD &= ~(1 << PORTD2);		// Wy³¹cz pullUp na PB0 (pin 8)
+	PORTD &= ~(1 << PORTD2);				// WyÅ‚Ä…cz pullUp na PB0 (pin 8)
 
-	PCICR |= (1 << PCIE2);     // set PCIE2 to enable PCMSK2 scan
-	PCMSK2 |= (1 << PCINT18);   // set PCINT18 to trigger an interrupt on state change
+	PCICR |= (1 << PCIE2);					// set PCIE2 to enable PCMSK2 scan
+	PCMSK2 |= (1 << PCINT18);				// set PCINT18 to trigger an interrupt on state change
 	
 	/* Inicjalizacja USART */
 	
 	UBRR0H = (MYUBRR >> 8);
 	UBRR0L = MYUBRR;
 	
-	UCSR0B |= (1 << RXEN0) | (1 << TXEN0);      // Aktywuje wysy³anie i odbieranie
+	UCSR0B |= (1 << RXEN0) | (1 << TXEN0);      // Aktywuje wysyÅ‚anie i odbieranie
 	UCSR0B |= (1 << RXCIE0);                    // Aktywuje przerwanie podczas odbierania
 	UCSR0C |= (1 << UCSZ01) | (1 << UCSZ00);    // Ustawia format ramki: 8 bit danych, 1 bit stop
 	
@@ -62,18 +63,18 @@ int main(void)
 	TCCR1B = 0;
 	TCNT1  = 0;
 
-	OCR1A = 15625;//31250;            // Rejestr do którego porównywany jest rejestr timera 16MHz/1024/1Hz
-	TCCR1B |= (1 << WGM12);   // Tryb CTC
+	OCR1A = 15625;//31250; = 0.5Hz			// Rejestr do ktÃ³rego porÃ³wnywany jest rejestr timera 16MHz/1024/1Hz
+	TCCR1B |= (1 << WGM12);					// Tryb CTC
 	TCCR1B |= (1 << CS10) | (1 << CS12);    // 1024 prescaler
-	TIMSK1 |= (1 << OCIE1A);  // Przerwanie po porównaniu rejestrów
+	TIMSK1 |= (1 << OCIE1A);				// Przerwanie po porÃ³wnaniu rejestrÃ³w
 
-	sei();		// W³¹czenie przerwañ
+	sei();									// WÅ‚Ä…czenie przerwaÅ„
 	
-	usart_pstr(hello);		// Wita siê przez USART
+	usart_pstr(hello);						// Wita siÄ™ przez USART
 
 	while(1)
 	{
-		;                                      // G³ówna pêtla
+		;									// GÅ‚Ã³wna pÄ™tla
 	}
 }
 
@@ -85,26 +86,26 @@ ISR (USART_RX_vect)
 	UDR0 = ReceivedChar;					// Pisz do bufora TX
 }
 
-// Przerwanie zewnêtrzne INT0 (PD2 - pin 2)
+// Przerwanie zewnÄ™trzne INT0 (PD2 - pin 2)
 ISR (PCINT2_vect)
 {
 	if( (PIND & (1 << PIND2)) == 1 )
 	{
-		/* Przejœcie ze stanu niskiego na wysoki */
-		PORTB |= (1 << DDB5);	// Zapal LED
+		/* PrzejÅ›cie ze stanu niskiego na wysoki */
+		PORTB |= (1 << DDB5);				// Zapal LED
 	}
 	else
 	{
-		/* Przejœcie ze stanu wysokiego na niski */
-		PORTB &= ~(1 << DDB5);	// Zgaœ LED
+		/* PrzejÅ›cie ze stanu wysokiego na niski */
+		PORTB &= ~(1 << DDB5);				// ZgaÅ› LED
 	}
 }
 
 // Przerwanie Timera1
-ISR(TIMER1_COMPA_vect)    // Przerwanie timera1 (porównanie rejestrów)
+ISR(TIMER1_COMPA_vect)						// Przerwanie timera1 (porÃ³wnanie rejestrÃ³w)
 {
-	dtostrf(f, 6, 4, buffer);	// Formatuje liczbê zmiennoprzecinkow¹ do stringa
+	dtostrf(f, 6, 4, buffer);				// Formatuje liczbÄ™ zmiennoprzecinkowÄ… do stringa
 	
-	usart_pstr(newLine);			// Wypisuje string z bufora do USART
-	usart_pstr(buffer);			// Wypisuje string z bufora do USART
+	usart_pstr(newLine);					// Wypisuje string z bufora do USART
+	usart_pstr(buffer);						// Wypisuje string z bufora do USART
 }
