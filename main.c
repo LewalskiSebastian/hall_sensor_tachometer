@@ -18,6 +18,7 @@ bool low = true;
 bool add = false;
 volatile int analogVal;
 char buffer[20];
+char newLine = '\n';
 
 void main(void) {
 	timer_init();   // Inicjalizacja timera
@@ -98,6 +99,7 @@ ISR(TIMER1_COMPA_vect)    // Przerwanie timera1 (porównanie rejestrów)
 	send_i = i;
 	itoa(send_i, buffer, 10);
 	usart_pstr(buffer);
+	usart_putchar(newLine);
 	i -= send_i;
 }
 
